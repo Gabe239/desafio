@@ -1,0 +1,11 @@
+[
+	{
+		"title": "hola",
+		"description": "dsad",
+		"price": 123,
+		"thumbnail": "https://example.com/image.jpg",
+		"code": "JSDS73",
+		"stock": 1,
+		"id": 1
+	}
+]
