@@ -15,14 +15,16 @@ document.addEventListener('DOMContentLoaded', () => {
         <p>Thumbnail: ${products.thumbnail}</p>
         <p>Code: ${products.code}</p>
         <p>Stock: ${products.stock}</p>
-        <p>Id: ${products.id}</p>
+        <p>Category: ${products.category}</p>
+        <p>Availability: ${products.availability}</p>
+        <p>Id: ${products._id}</p>
       `;
 
         productsList.appendChild(newProductLi);
     };
 
     const addProduct = (product) => {
-        fetch('/api/productos', {
+        fetch('/api/products', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -39,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const deleteProduct = (productId) => {
-        fetch(`/api/productos/${productId}`, {
+        fetch(`/api/products/${productId}`, {
             method: 'DELETE'
         })
             .then(response => response.json())
@@ -52,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updateProduct = (productId, updatedProduct) => {
-        fetch(`/api/productos/${productId}`, {
+        fetch(`/api/products/${productId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -79,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', (event) => {
         event.preventDefault();
 
-        const { title, description, price, thumbnail, code, stock } = form.elements;
+        const { title, description, price, thumbnail, code, stock, category, availability } = form.elements;
 
         const parsedPrice = parseFloat(price.value);
         const parsedStock = parseInt(stock.value);
@@ -90,7 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
             price: parsedPrice,
             thumbnail: thumbnail.value,
             code: code.value,
-            stock: parsedStock
+            stock: parsedStock,
+            category: category.value,
+            availability: availability.value
         };
 
         addProduct(newProduct);
@@ -115,6 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const thumbnail = document.getElementById('update-product-thumbnail');
         const code = document.getElementById('update-product-code');
         const stock = document.getElementById('update-product-stock');
+        const category = document.getElementById('update-product-category');
+        const availability = document.getElementById('update-product-avaibility');
         const parsedPrice = parseFloat(price.value);
         const parsedStock = parseInt(stock.value);
 
@@ -124,7 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
             price: parsedPrice,
             thumbnail: thumbnail.value,
             code: code.value,
-            stock: parsedStock
+            stock: parsedStock,
+            category: category.value,
+            availability: availability.value
         };
         updateProduct(productId, updatedProduct);
 
@@ -141,6 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
               <p>Thumbnail: ${updatedProduct.thumbnail}</p>
               <p>Code: ${updatedProduct.code}</p>
               <p>Stock: ${updatedProduct.stock}</p>
+              <p>Catergory: ${updatedProduct.category}</p>
+              <p>Avaibility: ${updatedProduct.availability}</p>
             `;
         }
     });

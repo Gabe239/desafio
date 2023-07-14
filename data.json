@@ -1,11 +1,122 @@
 [
 	{
-		"title": "hola",
-		"description": "dsad",
-		"price": 123,
-		"thumbnail": "https://example.com/image.jpg",
-		"code": "JSDS73",
-		"stock": 1,
-		"id": 1
+	  "title": "Product 1",
+	  "description": "Description for Product 1",
+	  "price": 10.99,
+	  "thumbnail": "https://example.com/thumbnail1.jpg",
+	  "code": "P001",
+	  "stock": 100,
+	  "category": "Category 1",
+	  "availability": true
+	},
+	{
+	  "title": "Product 2",
+	  "description": "Description for Product 2",
+	  "price": 19.99,
+	  "thumbnail": "https://example.com/thumbnail2.jpg",
+	  "code": "P002",
+	  "stock": 50,
+	  "category": "Category 2",
+	  "availability": true
+	},
+	{
+	  "title": "Product 3",
+	  "description": "Description for Product 3",
+	  "price": 8.99,
+	  "thumbnail": "https://example.com/thumbnail3.jpg",
+	  "code": "P003",
+	  "stock": 75,
+	  "category": "Category 1",
+	  "availability": true
+	},
+	{
+	  "title": "Product 4",
+	  "description": "Description for Product 4",
+	  "price": 14.99,
+	  "thumbnail": "https://example.com/thumbnail4.jpg",
+	  "code": "P004",
+	  "stock": 60,
+	  "category": "Category 2",
+	  "availability": true
+	},
+	{
+	  "title": "Product 5",
+	  "description": "Description for Product 5",
+	  "price": 12.99,
+	  "thumbnail": "https://example.com/thumbnail5.jpg",
+	  "code": "P005",
+	  "stock": 80,
+	  "category": "Category 1",
+	  "availability": true
+	},
+	{
+	  "title": "Product 6",
+	  "description": "Description for Product 6",
+	  "price": 9.99,
+	  "thumbnail": "https://example.com/thumbnail6.jpg",
+	  "code": "P006",
+	  "stock": 90,
+	  "category": "Category 2",
+	  "availability": true
+	},
+	{
+	  "title": "Product 7",
+	  "description": "Description for Product 7",
+	  "price": 24.99,
+	  "thumbnail": "https://example.com/thumbnail7.jpg",
+	  "code": "P007",
+	  "stock": 40,
+	  "category": "Category 1",
+	  "availability": true
+	},
+	{
+	  "title": "Product 8",
+	  "description": "Description for Product 8",
+	  "price": 7.99,
+	  "thumbnail": "https://example.com/thumbnail8.jpg",
+	  "code": "P008",
+	  "stock": 120,
+	  "category": "Category 2",
+	  "availability": true
+	},
+	{
+	  "title": "Product 9",
+	  "description": "Description for Product 9",
+	  "price": 15.99,
+	  "thumbnail": "https://example.com/thumbnail9.jpg",
+	  "code": "P009",
+	  "stock": 55,
+	  "category": "Category 1",
+	  "availability": true
+	},
+	{
+	  "title": "Product 10",
+	  "description": "Description for Product 10",
+	  "price": 11.99,
+	  "thumbnail": "https://example.com/thumbnail10.jpg",
+	  "code": "P010",
+	  "stock": 70,
+	  "category": "Category 2",
+	  "availability": true
+	},
+	{
+	  "title": "Product 11",
+	  "description": "Description for Product 11",
+	  "price": 18.99,
+	  "thumbnail": "https://example.com/thumbnail11.jpg",
+	  "code": "P011",
+	  "stock": 65,
+	  "category": "Category 1",
+	  "availability": true
+	},
+	{
+	  "title": "Product 12",
+	  "description": "Description for Product 12",
+	  "price": 6.99,
+	  "thumbnail": "https://example.com/thumbnail12.jpg",
+	  "code": "P012",
+	  "stock": 105,
+	  "category": "Category 2",
+	  "availability": true
 	}
-]
+  ]

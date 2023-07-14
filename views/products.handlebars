@@ -1,0 +1,29 @@
+<h1>Products</h1>
+<div id="product-list">
+    {{#each products}}
+    <div class="product-item">
+        <h2>{{title}}</h2>
+        <p>Description: {{description}}</p>
+        <p>Price: ${{price}}</p>
+        <p>Thumbnail: {{thumbnail}}</p>
+        <p>Code: {{code}}</p>
+        <p>Stock: {{stock}}</p>
+        <p>Category: {{category}}</p>
+        <p>Availability: {{availability}}</p>
+        <p>Id: {{_id}}</p>
+        <button class="add-to-cart-btn" data-product-id="{{_id}}">Add to Cart</button>
+    </div>
+    {{/each}}
+
+    
+        {{#if hasPrevPage}}
+        <a href="/products?page={{prevPage}}"><button>Prev</button></a>
+        {{/if}}
+        {{#if hasNextPage}}
+        <a href="/products?page={{nextPage}}"><button>Next</button></a>
+        {{/if}}
+    
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/products.js"></script>

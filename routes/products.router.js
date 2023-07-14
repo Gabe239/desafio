@@ -6,24 +6,67 @@ const productManager = new ProductManager();
 
 import { io } from '../app.js';
 
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit);
-    const products = await productManager.getProducts();
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const sort = req.query.sort;
+    const category = req.query.category; 
+    const availability = req.query.availability; 
 
-    if (!isNaN(limit)) {
-      return res.status(200).json(products.slice(0, limit));
-    } else {
-      return res.status(200).json(products);
+    let query = {};
+
+    if (req.query.query) {
+      query = { type: req.query.query };
     }
+
+    const totalProducts = await productManager.getProductsCount(query);
+    const totalPages = Math.ceil(totalProducts / limit);
+    const startIndex = (page - 1) * limit;
+
+    const products = await productManager.getProducts(
+      query,
+      sort,
+      limit,
+      startIndex,
+      category,
+      availability
+    );
+
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+    const nextPage = hasNextPage ? page + 1 : null;
+    const prevPage = hasPrevPage ? page - 1 : null;
+    const prevLink = hasPrevPage
+      ? `/api/products?page=${prevPage}&limit=${limit}&sort=${sort}&query=${req.query.query}&category=${category}&availability=${availability}`
+      : null;
+    const nextLink = hasNextPage
+      ? `/api/products?page=${nextPage}&limit=${limit}&sort=${sort}&query=${req.query.query}&category=${category}&availability=${availability}`
+      : null;
+
+    const result = {
+      status: 'success',
+      payload: products,
+      totalPages: totalPages,
+      prevPage: prevPage,
+      nextPage: nextPage,
+      page: page,
+      hasPrevPage: hasPrevPage,
+      hasNextPage: hasNextPage,
+      prevLink: prevLink,
+      nextLink: nextLink,
+    };
+
+    return res.status(200).json(result);
   } catch (err) {
     return res.status(500).json({ error: 'Error al enviar los productos' });
   }
 });
 
+
 router.get('/:pid', async (req, res) => {
   try {
-    const productId = parseInt(req.params.pid);
+    const productId = req.params.pid;
     const product = await productManager.getProductById(productId);
 
     if (product) {
@@ -37,19 +80,18 @@ router.get('/:pid', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-
   const newProduct = req.body;
-  
 
   try {
-    console.log(newProduct);
     await productManager.addProduct(
       newProduct.title,
       newProduct.description,
       newProduct.price,
       newProduct.thumbnail,
       newProduct.code,
-      newProduct.stock
+      newProduct.stock,
+      newProduct.category,
+      newProduct.availability,
     );
 
     io.emit("product-added", newProduct);
@@ -62,13 +104,12 @@ router.post('/', async (req, res) => {
 
 router.put('/:pid', async (req, res) => {
   try {
-    const productIdStr = req.params.pid;
+    const productId = req.params.pid;
     const updatedProduct = req.body;
-    const productId = parseInt(productIdStr);
     const product = await productManager.getProductById(productId);
 
     if (product) {
-      const { title, description, price, thumbnail, code, stock } = updatedProduct;
+      const { title, description, price, thumbnail, code, stock, category, availability} = updatedProduct;
       await productManager.updateProduct(
         title,
         description,
@@ -76,6 +117,8 @@ router.put('/:pid', async (req, res) => {
         thumbnail,
         code,
         stock,
+        category,
+        availability,
         productId
       );
       io.emit("product-updated", product);

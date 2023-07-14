@@ -1,5 +1,5 @@
 <div>
-  <h1>Lista de productos</h1>
+  <h1>Lista de productos y bienvenido, {{user.name}}!</h1>
   {{#if products}}
   <ul>
     {{#each products}}
@@ -10,11 +10,16 @@
       <p>Thumbnail: {{this.thumbnail}}</p>
       <p>Code: {{this.code}}</p>
       <p>Stock: {{this.stock}}</p>
-      <p>Id: {{this.id}}</p>
+      <p>Category: {{category}}</p>
+      <p>Availability: {{availability}}</p>
+      <p>Id: {{this._id}}</p>
     </li>
     {{/each}}
   </ul>
   {{else}}
   <p>No hay productos disponibles.</p>
   {{/if}}
+
+  <a href="/api/sessions/logout">Logout</a>
+
 </div>

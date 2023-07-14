@@ -4,22 +4,10 @@ class CartManager {
   constructor() {
   }
 
-  generateId(carts) {
-    const ids = carts.map(cart => cart.id);
-    const maxId = carts.length;
-
-    for (let i = 1; i <= maxId; i++) {
-      if (!ids.includes(i)) {
-        return i;
-      }
-    }
-    return carts.length + 1;
-  }
 
   async getCarts() {
     try {
-      // Perform database query to get all carts
-      const carts = await Cart.find().exec();
+      const carts = await Cart.find().populate('products.product').exec();
       return carts;
     } catch (err) {
       throw new Error('Error al obtener los carritos');
@@ -28,9 +16,9 @@ class CartManager {
 
   async saveCarts(carts) {
     try {
-      // Perform database operation to save/update carts
-      await Cart.deleteMany({}); // Clear existing carts
-      await Cart.insertMany(carts); // Insert new carts
+
+      await Cart.deleteMany({});
+      await Cart.insertMany(carts);
     } catch (err) {
       throw new Error('Error al guardar los carritos');
     }
@@ -38,58 +26,102 @@ class CartManager {
 
   async createCart() {
     try {
-      const carts = await this.getCarts();
-
       const newCart = {
-        id: this.generateId(carts),
         products: []
       };
-
-      carts.push(newCart);
-
-      await this.saveCarts(carts);
-
-      return newCart;
+      const cart = new Cart(newCart);
+      
+      await cart.save();
+    
+      return cart;
     } catch (err) {
-      throw new Error('Error al crear el carrito');
+      console.error('Error creating cart:', err);
+      throw new Error('Error creating cart');
     }
   }
 
   async getCartById(cartId) {
     try {
-      // Perform database query to get cart by id
-      const cart = await Cart.findOne({ id: cartId }).exec();
+      const cart = await Cart.findOne({ _id: cartId }).populate('products.product').lean().exec();
       return cart;
     } catch (err) {
-      throw new Error('Error al obtener el carrito');
+      throw new Error('Error retrieving cart');
     }
   }
-
   async addProductToCart(cartId, productId) {
     try {
-      const carts = await this.getCarts();
-      const cart = carts.find(c => c.id == cartId);
+      const cart = await Cart.findOneAndUpdate(
+        { _id: cartId },
+        { $inc: { 'products.$[elem].quantity': 1 } },
+        { arrayFilters: [{ 'elem.product': productId }], new: true }
+      ).populate('products.product');
 
       if (!cart) {
-        throw new Error('Carrito no encontrado');
+        throw new Error('Cart not found');
       }
 
-      const product = cart.products.find(p => p.product == productId);
-
-      if (product) {
-        product.quantity++;
-      } else {
-        cart.products.push({
-          product: productId,
-          quantity: 1
-        });
+      if (!cart.products || cart.products.length === 0) {
+        cart.products = [{ product: productId, quantity: 1 }];
       }
 
-      await this.saveCarts(carts);
+      await cart.save();
 
       return cart.products;
     } catch (err) {
-      throw new Error('Error al agregar el producto al carrito');
+      throw new Error('Error adding product to cart');
+    }
+  }
+
+
+  async removeProductFromCart(cartId, productId) {
+    try {
+      const cart = await Cart.findOneAndUpdate(
+        { _id: cartId },
+        { $pull: { products: { product: productId } } },
+        { new: true }
+      ).populate('products.product');
+      return cart;
+    } catch (err) {
+      throw new Error('Error al eliminar el producto del carrito');
+    }
+  }
+
+  async updateCartProducts(cartId, products) {
+    try {
+      const cart = await Cart.findOneAndUpdate(
+        { _id: cartId },
+        { products: products },
+        { new: true }
+      ).populate('products.product');
+      return cart;
+    } catch (err) {
+      throw new Error('Error al actualizar el carrito');
+    }
+  }
+
+  async updateProductQuantity(cartId, productId, quantity) {
+    try {
+      const cart = await Cart.findOneAndUpdate(
+        { _id: cartId, 'products.product': productId },
+        { $set: { 'products.$.quantity': quantity } },
+        { new: true }
+      ).populate('products.product');
+      return cart;
+    } catch (err) {
+      throw new Error('Error al actualizar la cantidad del producto');
+    }
+  }
+
+  async clearCart(cartId) {
+    try {
+      const cart = await Cart.findOneAndUpdate(
+        { _id: cartId },
+        { products: [] },
+        { new: true }
+      ).populate('products.product');
+      return cart;
+    } catch (err) {
+      throw new Error('Error al vaciar el carrito');
     }
   }
 }

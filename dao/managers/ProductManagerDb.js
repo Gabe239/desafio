@@ -1,26 +1,13 @@
+import productModel from '../models/productModel.js';
 import Product from '../models/productModel.js';
 
 class ProductManager {
   constructor() {
-    this.id = 1;
   }
 
-  async findMissingProductId() {
-    const products = await this.getProducts();
-    const ids = products.map(product => product.id);
-    const maxId = products.length;
-
-    for (let i = 1; i <= maxId; i++) {
-      if (!ids.includes(i)) {
-        return i;
-      }
-    }
-    return products.length + 1;
-  }
-
-  async addProduct(title, description, price, thumbnail, code, stock) {
+  async addProduct(title, description, price, thumbnail, code, stock, category, availability) {
     try {
-      if (!title || !description || !price || !thumbnail || !code || !stock) {
+      if (!title || !description || !price || !thumbnail || !code || !stock || !category || !availability) {
         throw new Error('Faltan datos para completar la adición del producto');
       }
 
@@ -30,7 +17,9 @@ class ProductManager {
         typeof thumbnail !== 'string' ||
         typeof price !== 'number' ||
         typeof code !== 'string' ||
-        typeof stock !== 'number'
+        typeof stock !== 'number' ||
+        typeof category !== 'string' ||
+        typeof availability !== 'string'
       ) {
         throw new Error(
           'Los datos proporcionados no son válidos para la adición del producto'
@@ -49,7 +38,8 @@ class ProductManager {
         thumbnail,
         code,
         stock,
-        id: await this.findMissingProductId(),
+        category,
+        availability,
       });
 
       await newProduct.save();
@@ -60,12 +50,45 @@ class ProductManager {
     }
   }
 
-  async getProducts() {
+  async getProducts(query, sort, limit, startIndex, category, availability) {
     try {
-      const products = await Product.find().lean();
+      let productsQuery = Product.find(query);
+
+      if (category) {
+        productsQuery = productsQuery.where('category').equals(category);
+      }
+
+      if (availability !== undefined) {
+        productsQuery = productsQuery.where('availability').equals(availability);
+      }
+
+      if (sort) {
+        const sortField = sort === 'asc' ? 'price' : '-price';
+        productsQuery = productsQuery.sort(sortField);
+      }
+
+      if (limit) {
+        productsQuery = productsQuery.limit(limit);
+      }
+
+      if (startIndex) {
+        productsQuery = productsQuery.skip(startIndex);
+      }
+
+      const products = await productsQuery.lean();
+
       return products;
     } catch (err) {
       throw new Error('Error al obtener los productos: ' + err.message);
+    }
+  }
+
+  async getProductsCount(query) {
+    try {
+      const count = await Product.countDocuments(query);
+      return count;
+    } catch (err) {
+      throw new Error("Error al obtener el número de productos: " + err.message);
     }
   }
 
@@ -81,7 +104,7 @@ class ProductManager {
     }
   }
 
-  async updateProduct(title, description, price, thumbnail, code, stock, id) {
+  async updateProduct(title, description, price, thumbnail, code, stock, category, availability, id) {
     try {
       const product = await Product.findById(id).lean();
       if (!product) {
@@ -94,6 +117,8 @@ class ProductManager {
       product.thumbnail = thumbnail;
       product.code = code;
       product.stock = stock;
+      product.category = category;
+      product.availability = availability;
 
       await product.save();
 
@@ -105,18 +130,32 @@ class ProductManager {
 
   async deleteProduct(id) {
     try {
-      const product = await Product.findById(id).lean();
+      const product = await Product.findByIdAndRemove(id);
+
       if (!product) {
         throw new Error('Producto no encontrado');
       }
-
-      await product.remove();
 
       console.log('El producto ha sido eliminado correctamente.');
     } catch (err) {
       throw new Error('Error eliminando el producto: ' + err.message);
     }
   }
+  async getProductsPage(limit, page) {
+    try {
+      const options = {
+        limit: limit,
+        page: page,
+      };
+  
+      const { docs: products, totalPages, hasPrevPage, hasNextPage, prevPage, nextPage } = await productModel.paginate({},{limit:10,page,lean:true});
+  
+      return { products, totalPages, hasPrevPage, hasNextPage, prevPage, nextPage };
+    } catch (err) {
+      throw new Error('Error retrieving products');
+    }
+  }
+
 }
 
 export default ProductManager;
