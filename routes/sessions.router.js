@@ -24,38 +24,18 @@ router.post('/register', async (req, res) => {
     res.send({ status: "success", message: "User registered" });
 });
 
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-
-    // check if user exists
-    const user = await userModel.findOne({ email });
-
-    console.log(user);
-    if (!user) return res.status(400).send({ status: "error", error: "User does not exists" });
-
-    // check if password is correct
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-        return res.status(400).send({ status: "error", error: "Incorrect password" });
-      }
-
-    // const user = await userModel.findOne({ email, password }); //Ya que el password no está hasheado, podemos buscarlo directamente
-    // if (!user) return res.status(400).send({ status: "error", error: "Incorrect credentials" });
-
-    req.session.user = {
-        name: `${user.first_name} ${user.last_name}`,
-        email: user.email,
-        age: user.age
-    }
-
-    if (user.email === 'adminCoder@coder.com' && user.password === 'adminCod3r123') {
-        user.role = 'admin';
+router.post('/login', passport.authenticate('local'), (req, res) => {
+    // The user has been authenticated by Passport, so the user data is available in req.user
+    // You can directly access the user data and respond with the appropriate data
+    const user = req.user;
+  
+    // Set the user role based on email (You can update this logic based on your requirements)
+    if (user.email === 'adminCoder@coder.com') {
+      user.role = 'admin';
     } else {
-        user.role = 'usuario';
+      user.role = 'usuario';
     }
 
-    // Store the user data in the session
     req.session.user = {
         first_name: user.first_name,
         last_name: user.last_name,
@@ -63,9 +43,9 @@ router.post('/login', async (req, res) => {
         age: user.age,
         role: user.role,
       };
-
-    res.send({ status: "success", payload: req.session.user, message: "¡Primer logueo realizado! :)" });
-})
+    // Respond with the user data
+    res.send({ status: "success", payload: user, message: "¡Primer logueo realizado! :)" });
+  });
 
 router.get('/logout', (req, res) => {
     req.session.destroy();

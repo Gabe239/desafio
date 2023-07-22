@@ -1,8 +1,8 @@
 import passport from 'passport';
 import GitHubStrategy from 'passport-github2';
 import { Strategy as LocalStrategy } from 'passport-local';
-import userService from './dao/models/userModel.js';
-
+import userModel from './dao/models/userModel.js';
+import bcrypt from 'bcrypt';
 const initializePassport = () => {
     passport.use('github', new GitHubStrategy({
         clientID: 'Iv1.b92d37f0d4dc61ba',
@@ -12,7 +12,7 @@ const initializePassport = () => {
     }, async (accessToken, refreshToken, profile, done) => {
         try {
             console.log({ profile })
-            let user = await userService.findOne({ email: profile._json.email });
+            let user = await userModel.findOne({ email: profile._json.email });
             if (user) return done(null, user);
             const newUser = {
                 first_name: profile._json.name,
@@ -21,40 +21,48 @@ const initializePassport = () => {
                 age: 18,
                 password: '',
             }
-            user = await userService.create(newUser);
+            user = await userModel.create(newUser);
             return done(null, user);
         } catch (error) {
             return done({ message: 'Error creating user' });
         }
     }));
-    passport.use('local',
-        new LocalStrategy(async (email, password, done) => {
-            try {
-                const user = await userService.findOne({ email: email }); // Change userModel to userService
-                if (!user) return done(null, false, { message: 'Incorrect username' });
+    passport.use('local', new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
+        try {
+            // check if user exists
+            const user = await userModel.findOne({ email });
 
-                const isPasswordValid = await bcrypt.compare(password, user.password);
-                if (!isPasswordValid) return done(null, false, { message: 'Incorrect password' });
-
-                return done(null, user);
-            } catch (err) {
-                return done(err);
+            if (!user) {
+                return done(null, false, { message: 'User does not exist' });
             }
-        })
-    );
 
+            // check if password is correct
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+
+            if (!isPasswordValid) {
+                return done(null, false, { message: 'Incorrect password' });
+            }
+
+            return done(null, user); // Authentication successful, pass the user object to the next middleware
+        } catch (error) {
+            return done(error);
+        }
+    }));
+
+    // Serialize and deserialize user objects
     passport.serializeUser((user, done) => {
-        done(null, user._id);
+        done(null, user.id); // Serialize user by ID, you can use any unique identifier
     });
 
-    passport.deserializeUser(async (_id, done) => {
+    passport.deserializeUser(async (id, done) => {
         try {
-            const user = await userService.findOne({ _id });
-            return done(null, user);
-        } catch {
-            return done({ message: "Error deserializing user" });
+            const user = await userModel.findById(id);
+            done(null, user);
+        } catch (error) {
+            done(error);
         }
     });
+
 };
 
 export default initializePassport;
