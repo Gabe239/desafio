@@ -7,14 +7,19 @@ const cartManager = new CartManager();
 const router = Router();
 
 router.get('/', async (req, res) => {
-   const user = req.session.user;
-   let products = await productManager.getProducts();
-   
-   res.render('home', {
-     user: user,
-     products: products 
-   });
- });
+  try {
+    const products = await productManager.getProducts();
+    const user = req.session.user; // Get the entire user object from the session
+    res.render('home', {
+      user: user,
+      products: products,
+    });
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).send('Error fetching products');
+  }
+});
+
 
 router.get('/realtimeproducts', async (req, res) => {
   const products = await productManager.getProducts();

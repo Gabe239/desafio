@@ -1,5 +1,9 @@
 <div>
-  <h1>Lista de productos y bienvenido, {{user.name}}!</h1>
+  {{#if user}}
+  <h1>Lista de productos y bienvenido, {{user.first_name}} {{user.last_name}}!</h1>
+  <p>Email: {{user.email}}</p>
+  <p>Age: {{user.age}}</p>
+
   {{#if products}}
   <ul>
     {{#each products}}
@@ -19,7 +23,9 @@
   {{else}}
   <p>No hay productos disponibles.</p>
   {{/if}}
+  {{else}}
+  <p>hola</p>
+  {{/if}}
 
   <a href="/api/sessions/logout"><button>Logout</button></a>
-
 </div>

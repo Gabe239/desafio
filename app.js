@@ -6,6 +6,8 @@ import viewsRouter from './routes/views.router.js';
 import { configureSocket } from './socket.js';
 import { connectToDatabase } from './database.js';
 import MongoStore from 'connect-mongo';
+import passport from 'passport';
+import initializePassport from './passport-config.js';
 
 const mongoUrl = 'mongodb+srv://gurbinaia:yZKkn43U153UYvPw@ecommerce.uguwr0z.mongodb.net/ecommerce';
 
@@ -27,7 +29,7 @@ app.use(
     session({
         secret: 'CoderSecretSHHHHH',
         resave: false,
-        saveUninitialized: false,
+        saveUninitialized: true,
         store: MongoStore.create({
             mongoUrl: mongoUrl,
             ttl: 3600,
@@ -38,13 +40,19 @@ app.use(
         }),
     })
 );
+
+initializePassport();
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.static(__dirname + '/public'));
+
 
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartRouter);
 app.use('/api/messages', messagesRouter);
 app.use('/api/sessions', sessionsRouter);
 app.use('/', viewsRouter);
+
 
 const server = app.listen(8080, () => console.log('Servidor Express escuchando en el puerto 8080'));
 
