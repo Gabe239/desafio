@@ -16,7 +16,7 @@ form.addEventListener('submit', e => {
     .then(response => response.json())
     .then(result => {
         if (result.status === 'success') {
-            window.location.replace('/');
+            window.location.replace('/login');
             alert('You have successfully registered');
         } else {
             alert('Registration failed. Please try again.');

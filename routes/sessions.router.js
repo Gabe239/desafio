@@ -1,30 +1,25 @@
 import { Router } from 'express';
-import userModel from '../dao/models/userModel.js';
-import bcrypt from 'bcrypt';
 import passport from 'passport';
 const router = Router();
 
-router.post('/register', async (req, res) => {
-    const { first_name, last_name, email, age, password } = req.body;
-    const exists = await userModel.findOne({ email });
-    if (exists) return res.status(400).send({ status: "error", error: "User already exists" });
-
-    // Hash the password before saving it to the database
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = {
-        first_name,
-        last_name,
-        email,
-        age,
-        password: hashedPassword
-    };
-    await userModel.create(user);
-    console.log(user);
-    res.send({ status: "success", message: "User registered" });
+router.post('/register', (req, res, next) => {
+  passport.authenticate('local-signup', (err, user, info) => {
+    if (err) {
+      return res.status(500).send({ status: 'error', error: 'An error occurred' });
+    }
+    if (!user) {
+      return res.status(400).send({ status: 'error', error: info.message });
+    }
+    req.login(user, (err) => {
+      if (err) {
+        return next(err);
+      }
+      res.send({ status: 'success', message: 'User registered' });
+    });
+  })(req, res, next);
 });
 
-router.post('/login', passport.authenticate('local'), (req, res) => {
+router.post('/login', passport.authenticate('local-login'), (req, res) => {
     // The user has been authenticated by Passport, so the user data is available in req.user
     // You can directly access the user data and respond with the appropriate data
     const user = req.user;

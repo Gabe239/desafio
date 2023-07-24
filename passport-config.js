@@ -27,41 +27,76 @@ const initializePassport = () => {
             return done({ message: 'Error creating user' });
         }
     }));
-    passport.use('local', new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
-        try {
-            // check if user exists
-            const user = await userModel.findOne({ email });
+    passport.use(
+        'local-login',
+        new LocalStrategy(
+            { usernameField: 'email' },
+            async (email, password, done) => {
+                try {
+                    // check if user exists
+                    const user = await userModel.findOne({ email });
 
-            if (!user) {
-                return done(null, false, { message: 'User does not exist' });
+                    if (!user) {
+                        return done(null, false, { message: 'User does not exist' });
+                    }
+
+                    // check if password is correct
+                    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+                    if (!isPasswordValid) {
+                        return done(null, false, { message: 'Incorrect password' });
+                    }
+
+                    return done(null, user); // Authentication successful, pass the user object to the next middleware
+                } catch (error) {
+                    return done(error);
+                }
+            }));
+
+    passport.use(
+        'local-signup',
+        new LocalStrategy(
+            {
+                usernameField: 'email',
+                passwordField: 'password',
+                passReqToCallback: true,
+            },
+            async (req, email, password, done) => {
+                try {
+                    const { first_name, last_name, email, age, password } = req.body;
+                    // Check if the user already exists
+                    const exists = await userModel.findOne({ email });
+                    if (exists) {
+                        return done(null, false, { message: 'User already exists' });
+                    }
+
+                    // Hash the password before saving it to the database
+                    const hashedPassword = await bcrypt.hash(password, 10);
+
+                    const user = {
+                        first_name,
+                        last_name,
+                        email,
+                        age,
+                        password: hashedPassword
+                    };
+
+                    await userModel.create(user);
+                    return done(null, user);
+                } catch (err) {
+                    return done(err);
+                }
             }
-
-            // check if password is correct
-            const isPasswordValid = await bcrypt.compare(password, user.password);
-
-            if (!isPasswordValid) {
-                return done(null, false, { message: 'Incorrect password' });
-            }
-
-            return done(null, user); // Authentication successful, pass the user object to the next middleware
-        } catch (error) {
-            return done(error);
-        }
-    }));
-
-    // Serialize and deserialize user objects
-    passport.serializeUser((user, done) => {
-        done(null, user.id); // Serialize user by ID, you can use any unique identifier
-    });
-
-    passport.deserializeUser(async (id, done) => {
-        try {
-            const user = await userModel.findById(id);
-            done(null, user);
-        } catch (error) {
-            done(error);
-        }
-    });
+        )
+    );
+   
+    passport.serializeUser(function(user, done) {
+        done(null, user);
+      });
+      
+      passport.deserializeUser(function(user, done) {
+        done(null, user);
+      });
 
 };
 
